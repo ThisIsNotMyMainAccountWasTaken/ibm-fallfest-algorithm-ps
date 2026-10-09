@@ -1,10 +1,8 @@
 from qiskit import QuantumCircuit
 
 
-def IntSend(In):
+def IntSend(In, qc):
     input = bin(In)[2:].zfill(2)
-
-    qc = QuantumCircuit(2, 2)
 
     Input = str(input)
     c = Input[0]

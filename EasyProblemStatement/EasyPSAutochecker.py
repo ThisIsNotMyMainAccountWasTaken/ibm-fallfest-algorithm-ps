@@ -10,7 +10,8 @@ Evaluation = True
 
 for i in range(TestCases):
     ChosenInteger = random.choice(InputList)
-    CheckCircuit = IntSend(ChosenInteger)
+    qc = QuantumCircuit(2, 2)
+    CheckCircuit = IntSend(ChosenInteger, qc)
     CorrectInteger = bin(ChosenInteger)[2:].zfill(2)
 
     simulator = AerSimulator()
