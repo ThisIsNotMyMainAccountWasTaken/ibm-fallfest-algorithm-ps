@@ -42,7 +42,3 @@ if Evaluation == True:
     print("Problem Statement Successful, You may move on")
 else:
     print("Error in Solution, Try again.")
-
-
-from qiskit_aer import AerSimulator
-
