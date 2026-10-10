@@ -17,7 +17,6 @@ def SolutionCreator(SecretMessage):
     pairwise_bin = [
         binary_str[j : j + 2] for binary_str in bin_list for j in range(0, 8, 2)
     ]
-    print(f"No. Of sets required: {len(pairwise_bin)}")
 
     SolString = "".join(bit for bit in pairwise_bin)
     return SolString
@@ -39,8 +38,7 @@ def BinToMessage(SolStr):
 
 # Control Panel
 # =========================================================
-TestCases = 1
-"""
+TestCases = 5
 MessageList = [
     "Abhimanyu is Doraemon - well known fact",
     "You Guys have no idea what they do in Labs - some cool proff",
@@ -51,22 +49,18 @@ MessageList = [
     "We are the most coordinated group of people who have never once been coordinated - Mythos",
 
 ]
-"""
-MessageList = ["Hello"]
 # =========================================================
 # Activation
 Evaluation = True
 
 
-# TestCase Runner tm :D
+# TestCase Runner (tm) :D
 for i in range(TestCases):
     # Choose a Message as a TestCase
     SecretMessage = random.choice(MessageList)
 
     # Test and calculations (Temporary) REMOVE BEFORE ACTAULLY RUNNING IT YOU IDIOT >:C
-    print(f"Test case {i + 1} Message: {SecretMessage}")
     ReqLen = len(SecretMessage) * 8
-    print(f"Required Length of Qubits = {ReqLen}")
 
     # Defining the input register
     QReg = QuantumRegister(ReqLen, "Q")
@@ -74,9 +68,9 @@ for i in range(TestCases):
     qc = QuantumCircuit(QReg, CReg)
 
     # Place the System into pairwise Entangled Bell states
-    for i in range(ReqLen // 2):
-        qc.h(2 * i)
-        qc.cx(2 * i, 2 * i + 1)
+    for j in range(ReqLen // 2):
+        qc.h(2 * j)
+        qc.cx(2 * j, 2 * j + 1)
         qc.barrier()
 
     # Calculate Intended Solution
@@ -92,10 +86,20 @@ for i in range(TestCases):
     result = job.result()
     counts = result.get_counts(transpiled_circuit)
     measured_result = list(counts.keys())[0]
-    measured_result = list(counts.keys())[0][::-1]  # Reverses endianness if needed
-    print(f"The Measrued result is: {measured_result}")
+    measured_result = list(counts.keys())[0][::-1]  # Reverses endianness because qiskit is weird
 
     # Temporary Testing code to ensure un-break. REMOVE BEFORE ACTAULLY RUNNING IT YOU IDIOT >:C
-    print(f"Solution: {Solution}")
     SolutionDecoupled = BinToMessage(Solution)
-    # print(f"Deciphered Message(Autochecker Side): {SolutionDecoupled}")
+    print(f"Deciphered Message: {SolutionDecoupled}")
+
+    if(SolutionDecoupled == SecretMessage):
+        print(f"Test Case {i+1} Passed")
+    else:
+        print(f"Failed on Test Case {i}, Input Integer {ChosenInteger}")
+        Evaluation = False
+        break
+
+if Evaluation == True:
+    print("Problem Statement Successful, You may move on")
+else:
+    print("Error in Solution, Try again.")

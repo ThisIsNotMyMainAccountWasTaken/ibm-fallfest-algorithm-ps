@@ -39,12 +39,10 @@ for i in range(TestCases):
         break
 
 if Evaluation == True:
-    print("Problem Statement Successful")
+    print("Problem Statement Successful, You may move on")
 else:
     print("Error in Solution, Try again.")
 
 
 from qiskit_aer import AerSimulator
 
-simulator = AerSimulator()
-print(simulator.configuration().n_qubits)
