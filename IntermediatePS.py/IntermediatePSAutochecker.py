@@ -1,6 +1,7 @@
 import random
-from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister
-from IntermediatePS.py import *
+from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister, transpile
+from qiskit_aer import AerSimulator
+from IntermediatePS import *
 
 
 # Convert the String to integer list, sub helper func
@@ -38,7 +39,8 @@ def BinToMessage(SolStr):
 
 # Control Panel
 # =========================================================
-TestCases = 5
+TestCases = 1
+"""
 MessageList = [
     "Abhimanyu is Doraemon - well known fact",
     "You Guys have no idea what they do in Labs - some cool proff",
@@ -47,7 +49,10 @@ MessageList = [
     "Aurat chahe kitni bhi badi ban jaye kabhi ek bada aadmi nahi ban sakti - Veir",
     "Sir ise fork kehte hai - Epic Nescafe Guy",
     "We are the most coordinated group of people who have never once been coordinated - Mythos",
+
 ]
+"""
+MessageList = ["Hello"]
 # =========================================================
 # Activation
 Evaluation = True
@@ -80,7 +85,17 @@ for i in range(TestCases):
     # Call User Function for testing
     CheckCircuit = MessageSend(SecretMessage, qc)
 
+    # Simulator shit
+    simulator = AerSimulator(method="stabilizer")
+    transpiled_circuit = transpile(CheckCircuit, simulator)
+    job = simulator.run(transpiled_circuit, shots=1)
+    result = job.result()
+    counts = result.get_counts(transpiled_circuit)
+    measured_result = list(counts.keys())[0]
+    measured_result = list(counts.keys())[0][::-1]  # Reverses endianness if needed
+    print(f"The Measrued result is: {measured_result}")
+
     # Temporary Testing code to ensure un-break. REMOVE BEFORE ACTAULLY RUNNING IT YOU IDIOT >:C
     print(f"Solution: {Solution}")
     SolutionDecoupled = BinToMessage(Solution)
-    print(f"Deciphered Message(Autochecker Side): {SolutionDecoupled}")
+    # print(f"Deciphered Message(Autochecker Side): {SolutionDecoupled}")
