@@ -89,13 +89,13 @@ for i in range(TestCases):
     measured_result = list(counts.keys())[0][::-1]  # Reverses endianness because qiskit is weird
 
     # Temporary Testing code to ensure un-break. REMOVE BEFORE ACTAULLY RUNNING IT YOU IDIOT >:C
-    SolutionDecoupled = BinToMessage(Solution)
+    SolutionDecoupled = BinToMessage(measured_result)
     print(f"Deciphered Message: {SolutionDecoupled}")
 
     if(SolutionDecoupled == SecretMessage):
         print(f"Test Case {i+1} Passed")
     else:
-        print(f"Failed on Test Case {i}, Input Integer {ChosenInteger}")
+        print(f"Failed on Test Case {i}, Input Message: {SecretMessage}")
         Evaluation = False
         break
 

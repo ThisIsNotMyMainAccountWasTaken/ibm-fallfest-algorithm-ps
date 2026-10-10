@@ -5,7 +5,6 @@ def MessageSend(Message, qc):
     # Converting message into 8-bt ASCII Format
     ASCIIBin = [format(ord(code), "08b") for code in Message]
 
-
     # Take the ASCII Binary and teh, uhh..... convert it into pairwise for superdense
     PairwiseBin = [
         binary_str[j : j + 2] for binary_str in ASCIIBin for j in range(0, 8, 2)
