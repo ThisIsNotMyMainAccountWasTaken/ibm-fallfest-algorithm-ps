@@ -1,8 +1,8 @@
 from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister
 
-
+"""
 def text_to_bits(phrase: str) -> str:
-    """ASCII, 8 bits per character."""
+        ASCII, 8 bits per character.
     return "".join(format(ord(c), "08b") for c in phrase)
 
 
@@ -11,12 +11,12 @@ def bits_to_text(bits: str) -> str:
 
 
 def build_circuit(phrase: str) -> QuantumCircuit:
-    """
+
     Superdense coding: each shared e-bit lets Alice send 2 classical bits
     by transmitting just 1 qubit. 8 bits/char -> 4 e-bits per character.
     Pair i carries bits[2i] (-> Z) and bits[2i+1] (-> X).
     Classical register: c[2i], c[2i+1] hold the pair's two bits in order.
-    """
+
     bits = text_to_bits(phrase)
     if len(bits) % 2:
         bits += "0"
@@ -53,8 +53,7 @@ def build_circuit(phrase: str) -> QuantumCircuit:
 
 
 def decode_counts(counts: dict) -> str:
-    """Autograder-side: take most frequent outcome, undo Qiskit's little-endian order."""
-    key = max(counts, key=counts.get).replace(" ", "")
+Autograder-side: take most frequent outcome, undo Qiskit's little-endian order    key = max(counts, key=counts.get).replace(" ", "")
     return bits_to_text(key[::-1])
 
 
@@ -70,7 +69,7 @@ for phrase in ["Hi", "Quantum!", "IIT Indore 2026"]:
 
 SecretMessage = "Hello, there"
 
-
+"""
 def string_to_int(message: str) -> list[int]:
     integer_list = [ord(char) for char in message]
     return integer_list
@@ -90,4 +89,14 @@ pairwise_bin = [
 ]
 print("2-bit Pairwise List:", pairwise_bin)
 
-# def MessageSend(Message, qc):
+def MessageSend(Message, qc):
+    #Converting message into 8-bt ASCII Format
+    ASCIIBin = [format(code, "08b") for code in ascii_ints]
+    print ASCIIBin
+
+    #Take the ASCII Binary and teh, uhh..... convert it into pairwise for superdense
+    PairwiseBin = [
+        binary_str[j : j + 2] for binary_str in bin_list for j in range(0, 8, 2)
+    ]
+    SetsNum = len(PairwiseBin)
+

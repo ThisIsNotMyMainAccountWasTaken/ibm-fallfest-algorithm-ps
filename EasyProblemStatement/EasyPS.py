@@ -8,10 +8,6 @@ def IntSend(In, qc):
     c = Input[0]
     d = Input[1]
 
-    qc.h(0)
-    qc.cx(0, 1)
-    qc.barrier()
-
     if d == "1":
         qc.z(0)
     if c == "1":

@@ -68,6 +68,12 @@ for i in range(TestCases):
     CReg = ClassicalRegister(ReqLen, "C")
     qc = QuantumCircuit(QReg, CReg)
 
+    # Place the System into pairwise Entangled Bell states
+    for i in range(ReqLen // 2):
+        qc.h(2 * i)
+        qc.cx(2 * i, 2 * i + 1)
+        qc.barrier()
+
     # Calculate Intended Solution
     Solution = SolutionCreator(SecretMessage)
 
