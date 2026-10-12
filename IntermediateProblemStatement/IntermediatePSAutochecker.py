@@ -14,6 +14,7 @@ MessageList = [
     "Aurat chahe kitni bhi badi ban jaye kabhi ek bada aadmi nahi ban sakti - Veir",
     "Sir ise fork kehte hai - Epic Nescafe Guy",
     "We are the most coordinated group of people who have never once been coordinated - Mythos",
+    "Life Sucks- Monsieur Power",
 
 ]
 # =========================================================
