@@ -1,27 +1,24 @@
 from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister
 import random
 from qiskit import QuantumCircuit
-from qiskit.transpiler.passes.analysis import num_qubits
-import random
-from qiskit import QuantumCircuit
 from AdvancedPSAutochecker import (BobRead, BobRecheck, EncryptMessage,
                                    InitialTransfer, StarterFunct)
 
-
 def PrepareEncodeQubits(KeyArr, BasisArr, qc, N):
     InKey = N
+    qr = qc.qregs[0]
     for i in range(InKey):
         if KeyArr[i] == 0:
             if BasisArr[i] == 'D':
-                qc.h(i)
+                qc.h(qr[i])
             elif BasisArr[i] == 'O':
                 continue
         elif KeyArr[i] == 1:
             if BasisArr[i] == 'D':
-                qc.x(i)
-                qc.h(i)
+                qc.x(qr[i])
+                qc.h(qr[i])
             elif BasisArr[i] == 'O':
-                qc.x(i)
+                qc.x(qr[i])
     return qc
 
 def AliceJob(Message, num_qubits):
@@ -49,7 +46,7 @@ def AliceJob(Message, num_qubits):
 
     UnMatchRate = BobRecheck(CommonKeyCheck)
 
-    if UnMatchRate >= 0.10:
+    if UnMatchRate >= 0.03:
         return "Compromised"
 
     else:

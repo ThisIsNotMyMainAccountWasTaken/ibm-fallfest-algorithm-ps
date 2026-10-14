@@ -6,7 +6,7 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 # Control Panel
 # =========================================================
-TestCases = 5
+TestCases = 25
 Num_Qubits = 1024 #Initial Key Length
 EavesdropProb = 0.3 #Probability that eve is listening in in the first place
 ChoiceProb = 0.2 #Probability that eve listens to a specific qubit out of a state
@@ -30,6 +30,8 @@ _BobBits = []
 _BaseMatches = []
 _EvePresent = False
 
+# =========================================================
+
 def StarterFunct():
     qr = QuantumRegister(Num_Qubits, name="qubit")
     cr_eve = ClassicalRegister(Num_Qubits, name="eve_read")
@@ -38,6 +40,7 @@ def StarterFunct():
     return qc
 
 def InitialTransfer(qc):
+    global _EvePresent
 
     qr = qc.qregs[0]
     cr_eve, cr_bob = qc.cregs
@@ -109,7 +112,7 @@ def BobRecheck(EveSharedKey):
         if EveSharedKey[i] != _BobBits[_BaseMatches[i]]:
             Errors += 1
 
-    return Errors / 100
+    return Errors / n
 
 
 def BitsToBytes(bits):
@@ -118,10 +121,10 @@ def BitsToBytes(bits):
     return int("".join(map(str, bits)), 2).to_bytes(len(bits) // 8, "big")
 
 def EncryptMessage(Message, KeyBits):
-    key = BitsToBytes(KeyBits)                   # 32 bytes = AES-256
-    nonce = os.urandom(12)                       # new random nonce for every message
+    key = BitsToBytes(KeyBits) 
+    nonce = os.urandom(12) 
     ciphertext = AESGCM(key).encrypt(nonce, Message.encode("utf-8"), None)
-    return nonce + ciphertext                    # the nonce isn't secret; send it along
+    return nonce + ciphertext 
 
 def DecryptMessage(Packet, KeyBits):
     key = BitsToBytes(KeyBits)
@@ -129,4 +132,41 @@ def DecryptMessage(Packet, KeyBits):
     plaintext = AESGCM(key).decrypt(nonce, ciphertext, None)  # raises InvalidTag if key is wrong
     return plaintext.decode("utf-8")
 
+
+from cryptography.exceptions import InvalidTag
+
+def BobDecrypt(Packet):
+    BobKey = [_BobBits[i] for i in _BaseMatches[100:356]]
+    return DecryptMessage(Packet, BobKey)
+
+
+#Test Case Running Begins
+
+def RunTests(AliceJob):
+    score = 0
+    for t in range(TestCases):
+        msg = random.choice(MessageList)
+        try:
+            out = AliceJob(msg, Num_Qubits)
+        except Exception as e:
+            print(f"Test {t+1}: FAIL (crashed: {type(e).__name__}: {e})")
+            continue
+
+        if out == "Compromised":
+            ok, note = _EvePresent, "Compromised"
+            if not ok:
+                note = "false alarm (no Eve)"
+        else:
+            try:
+                ok = (BobDecrypt(out) == msg)
+                note = "decrypted" if ok else "wrong message"
+            except InvalidTag:
+                ok, note = False, "keys differ (Eve got through)"
+            except Exception as e:
+                ok, note = False, f"bad output ({type(e).__name__})"
+
+        score += ok
+        print(f"Test {t+1}: {'PASS' if ok else 'FAIL'} | Eve present: {_EvePresent} | {note}")
+    print(f"Score: {score}/{TestCases}")
+    return score
 
