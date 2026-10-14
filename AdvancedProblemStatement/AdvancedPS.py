@@ -1,10 +1,12 @@
-from re import Match
-
 from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister
 import random
 from qiskit import QuantumCircuit
 from qiskit.transpiler.passes.analysis import num_qubits
-from AdvancedPSAutochecker import BobRead, BobRecheck, InitialTransfer, StarterFunct
+import random
+from qiskit import QuantumCircuit
+from AdvancedPSAutochecker import (BobRead, BobRecheck, EncryptMessage,
+                                   InitialTransfer, StarterFunct)
+
 
 def PrepareEncodeQubits(KeyArr, BasisArr, qc, N):
     InKey = N
@@ -23,10 +25,7 @@ def PrepareEncodeQubits(KeyArr, BasisArr, qc, N):
     return qc
 
 def AliceJob(Message, num_qubits):
-    KeyArr = []
-    for i in range(InKey):
-        Bit = random.randint(0,1)
-        KeyArr.append(Bit)
+    KeyArr = [random.randint(0,1) for _ in range(num_qubits)]
 
     BasisArr = ""
     for i in range(num_qubits):
@@ -34,7 +33,7 @@ def AliceJob(Message, num_qubits):
         BasisArr = BasisArr + Basis
 
     qc = StarterFunct()
-    qc = PrepareEncodeQubits(KeyArr, BasisArr, qc, 1024)
+    qc = PrepareEncodeQubits(KeyArr, BasisArr, qc, num_qubits)
 
     TransferredCircuit = InitialTransfer(qc)
 
@@ -49,3 +48,15 @@ def AliceJob(Message, num_qubits):
         CommonKeyCheck.append(CommonKey_Alleged[i])
 
     UnMatchRate = BobRecheck(CommonKeyCheck)
+
+    if UnMatchRate >= 0.10:
+        return "Compromised"
+
+    else:
+        TrueKey = []
+        for i in range(256):
+            TrueKey.append(CommonKey_Alleged[100 + i])
+
+        EncryptedMsg = EncryptMessage(Message, TrueKey)
+
+        return EncryptedMsg

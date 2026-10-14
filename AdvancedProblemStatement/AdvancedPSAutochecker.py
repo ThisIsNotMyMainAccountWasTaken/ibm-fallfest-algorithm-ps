@@ -1,6 +1,8 @@
 import random
-from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister, transpile
+from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister
 from qiskit_aer import AerSimulator
+import os
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 # Control Panel
 # =========================================================
@@ -24,8 +26,9 @@ MessageList = [
 Evaluation = True
 # =========================================================
 
-BaseMatches = []
-
+_BobBits = []
+_BaseMatches = []
+_EvePresent = False
 
 def StarterFunct():
     qr = QuantumRegister(Num_Qubits, name="qubit")
@@ -35,7 +38,13 @@ def StarterFunct():
     return qc
 
 def InitialTransfer(qc):
+
+    qr = qc.qregs[0]
+    cr_eve, cr_bob = qc.cregs
+
     Eavesdrop = random.choices([0, 1], weights=[1 - EavesdropProb, EavesdropProb], k=1)[0]
+    _EvePresent = bool(Eavesdrop)
+
     if Eavesdrop == 1 :
         for i in range(Num_Qubits):
             Choice = random.choices([0, 1], weights=[1 - ChoiceProb, ChoiceProb], k=1)[0]
@@ -48,14 +57,8 @@ def InitialTransfer(qc):
                 elif eve_temp_basis == 'O':
                     qc.measure(qr[i], cr_eve[i])
 
-                if qc.switch(cr_eve[i]) == 0:
-                    qc.id(qr[i])
-                elif qc.switch(cr_eve[i]) == 1:
-                    qc.x(qr[i])
-
                 if eve_temp_basis == 'D':
                     qc.h(qr[i])
-
 
             else:
                 continue
@@ -65,7 +68,12 @@ def InitialTransfer(qc):
     else:
         return qc
 
-def BobRead(qc, EveBasis):
+def BobRead(qc, AliceBasis):
+
+    qr = qc.qregs[0]
+    cr_eve, cr_bob = qc.cregs
+    global _BobBits, _BaseMatches
+
 
     BobBasis = ""
     for i in range(Num_Qubits):
@@ -80,27 +88,45 @@ def BobRead(qc, EveBasis):
             qc.measure(qr[i], cr_bob[i])
 
     simulator = AerSimulator(method="stabilizer")
-    result = simulator.run(qc, shots=1, dynamic=True).result()
+    result = simulator.run(qc, shots=1).result()
     counts = result.get_counts()
     raw_result_str = list(counts.keys())[0]
-    bob_results, eve_results = raw_result_str.split(" ")
+    bob_str, _ = raw_result_str.split(" ")
+    _BobBits = [int(b) for b in bob_str[::-1]]
+
+    _BaseMatches = []
 
     for i in range(Num_Qubits):
-        if EveBasis == BobBasis:
-            BaseMatches.append(i)
+        if AliceBasis[i] == BobBasis[i]:
+            _BaseMatches.append(i)
 
-    return BaseMatches
+    return _BaseMatches
 
 def BobRecheck(EveSharedKey):
     Errors = 0
-    for i in range(100):
-        if EveSharedKey[i] != BaseMatches[i]:
+    n = len(EveSharedKey)
+    for i in range(n):
+        if EveSharedKey[i] != _BobBits[_BaseMatches[i]]:
             Errors += 1
 
     return Errors / 100
 
 
+def BitsToBytes(bits):
+    # 256 bits -> 32 bytes
+    assert len(bits) == 256, "Key must be exactly 256 bits"
+    return int("".join(map(str, bits)), 2).to_bytes(len(bits) // 8, "big")
+
+def EncryptMessage(Message, KeyBits):
+    key = BitsToBytes(KeyBits)                   # 32 bytes = AES-256
+    nonce = os.urandom(12)                       # new random nonce for every message
+    ciphertext = AESGCM(key).encrypt(nonce, Message.encode("utf-8"), None)
+    return nonce + ciphertext                    # the nonce isn't secret; send it along
+
+def DecryptMessage(Packet, KeyBits):
+    key = BitsToBytes(KeyBits)
+    nonce, ciphertext = Packet[:12], Packet[12:]
+    plaintext = AESGCM(key).decrypt(nonce, ciphertext, None)  # raises InvalidTag if key is wrong
+    return plaintext.decode("utf-8")
 
 
-
-from AdvancedPS import *
