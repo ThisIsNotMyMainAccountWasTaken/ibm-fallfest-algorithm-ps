@@ -1,3 +1,4 @@
 from AdvancedPS import AliceJob
 import AdvancedPSAutochecker as AC
-AC.RunTests(AliceJob)
+Result = AC.RunTests(AliceJob)
+print(Result)
