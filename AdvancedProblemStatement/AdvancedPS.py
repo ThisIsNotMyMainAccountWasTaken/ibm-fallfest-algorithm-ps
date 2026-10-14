@@ -1,8 +1,10 @@
+from re import Match
+
 from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister
 import random
 from qiskit import QuantumCircuit
 from qiskit.transpiler.passes.analysis import num_qubits
-from AdvancedPSAutochecker import InitialTransfer, StarterFunct
+from AdvancedPSAutochecker import BobRead, BobRecheck, InitialTransfer, StarterFunct
 
 def PrepareEncodeQubits(KeyArr, BasisArr, qc, N):
     InKey = N
@@ -35,3 +37,15 @@ def AliceJob(Message, num_qubits):
     qc = PrepareEncodeQubits(KeyArr, BasisArr, qc, 1024)
 
     TransferredCircuit = InitialTransfer(qc)
+
+    Matches = BobRead(qc, BasisArr)
+
+    CommonKey_Alleged = []
+    for i in range(len(Matches)):
+        CommonKey_Alleged.append(KeyArr[Matches[i]])
+
+    CommonKeyCheck = []
+    for i in range(100):
+        CommonKeyCheck.append(CommonKey_Alleged[i])
+
+    UnMatchRate = BobRecheck(CommonKeyCheck)

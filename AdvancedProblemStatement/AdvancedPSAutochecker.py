@@ -24,6 +24,9 @@ MessageList = [
 Evaluation = True
 # =========================================================
 
+BaseMatches = []
+
+
 def StarterFunct():
     qr = QuantumRegister(Num_Qubits, name="qubit")
     cr_eve = ClassicalRegister(Num_Qubits, name="eve_read")
@@ -37,12 +40,12 @@ def InitialTransfer(qc):
         for i in range(Num_Qubits):
             Choice = random.choices([0, 1], weights=[1 - ChoiceProb, ChoiceProb], k=1)[0]
             if Choice == 1:
-                eve_temp_basis = random.choice(['+', 'X'])
-                if eve_temp_basis == 'X':
+                eve_temp_basis = random.choice(['O', 'D'])
+                if eve_temp_basis == 'D':
                     qc.h(qr[i])
                     qc.measure(qr[i], cr_eve[i])
 
-                elif eve_temp_basis == '+':
+                elif eve_temp_basis == 'O':
                     qc.measure(qr[i], cr_eve[i])
 
                 if qc.switch(cr_eve[i]) == 0:
@@ -50,7 +53,7 @@ def InitialTransfer(qc):
                 elif qc.switch(cr_eve[i]) == 1:
                     qc.x(qr[i])
 
-                if eve_temp_basis == 'X':
+                if eve_temp_basis == 'D':
                     qc.h(qr[i])
 
 
@@ -62,12 +65,42 @@ def InitialTransfer(qc):
     else:
         return qc
 
-def BobRead(qc):
+def BobRead(qc, EveBasis):
+
     BobBasis = ""
     for i in range(Num_Qubits):
         Basis = random.choice(['D', 'O'])
         BobBasis = BobBasis + Basis
 
-    
+    for i in range(Num_Qubits):
+        if BobBasis[i] == 'D':
+            qc.h(qr[i])
+            qc.measure(qr[i], cr_bob[i])
+        elif BobBasis[i] == 'O':
+            qc.measure(qr[i], cr_bob[i])
+
+    simulator = AerSimulator(method="stabilizer")
+    result = simulator.run(qc, shots=1, dynamic=True).result()
+    counts = result.get_counts()
+    raw_result_str = list(counts.keys())[0]
+    bob_results, eve_results = raw_result_str.split(" ")
+
+    for i in range(Num_Qubits):
+        if EveBasis == BobBasis:
+            BaseMatches.append(i)
+
+    return BaseMatches
+
+def BobRecheck(EveSharedKey):
+    Errors = 0
+    for i in range(100):
+        if EveSharedKey[i] != BaseMatches[i]:
+            Errors += 1
+
+    return Errors / 100
+
+
+
+
 
 from AdvancedPS import *
